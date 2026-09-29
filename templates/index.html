@@ -1,9 +1,11 @@
 {% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
 {% block scripts %}
 {{ super() }}
 {{ moment.include_moment() }}
 {% endblock %}
+
 
 {% block title %}Flasky{% endblock %}
 
@@ -31,10 +33,19 @@
 
 {% block content %}
 <div class="container">
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-warning">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        {{ message }}
+    </div>
+    {% endfor %}
+
+    {% block page_content %}{% endblock %}
     <div class="page-header">
-        <h1>Hello, Jeff!</h1>
+        <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
     </div>
     <p>The local date and time is {{ moment(current_time).format('LLLL') }}.</p>
     <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
+    {{ wtf.quick_form(form) }}
 </div>
 {% endblock %}
