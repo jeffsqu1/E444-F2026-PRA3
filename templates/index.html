@@ -37,7 +37,7 @@
 
     {% block page_content %}{% endblock %}
     <div class="page-header">
-        <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+        <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}! Welcome to PRA3 Docker!</h1>
         {% if username and 'utoronto' in email_address.lower() %}
         <h1>Your UofT email is {{ email_address }}</h1>
         {% else %}
