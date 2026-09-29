@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, redirect, url_for, flash
+from flask import Flask, render_template, session, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import FlaskForm
@@ -13,20 +13,42 @@ moment = Moment(app)
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
+    email = StringField(
+        'What is your UofT email address?',
+        validators=[DataRequired()],
+        render_kw={
+            'pattern': '.*@.*',
+            'oninvalid': "this.setCustomValidity('Please include an @ in the email address.')",
+            'oninput': "this.setCustomValidity('')",
+        },
+    )
     submit = SubmitField('Submit')
+
     
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # name = None
     form = NameForm()
-    if form.validate_on_submit():
+    if request.method == 'POST' and request.form.get('name'):
         old_name = session.get('name')
-        if old_name is not None and old_name != form.name.data:
+        if old_name is not None and old_name != request.form['name']:
             flash('Looks like you have changed your name!')
-        session['name'] = form.name.data
+        session['name'] = request.form['name']
+
+    if form.validate_on_submit():
+        old_email = session.get('email')
+        email_address = form.email.data
+        if old_email != email_address:
+            flash('Looks like you have changed your email!')
+        if 'utoronto' in email_address.lower():
+            session['email'] = email_address
+            session['username'] = email_address.split('@', 1)[0]
+        else:
+            session.pop('email', None)
+            session.pop('username', None)
         return redirect(url_for('index'))
-        # form.name.data = ''
-    return render_template('index.html', form=form, name=session.get('name'), current_time=datetime.utcnow())
+
+    return render_template('index.html', form=form, name=session.get('name'), username=session.get('username'), email_address=session.get('email'), current_time=datetime.utcnow())
 
 @app.route('/user/<name>')
 def user(name):

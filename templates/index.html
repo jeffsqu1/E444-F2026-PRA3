@@ -1,11 +1,6 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block scripts %}
-{{ super() }}
-{{ moment.include_moment() }}
-{% endblock %}
-
 
 {% block title %}Flasky{% endblock %}
 
@@ -43,9 +38,13 @@
     {% block page_content %}{% endblock %}
     <div class="page-header">
         <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+        {% if username and 'utoronto' in email_address.lower() %}
+        <h1>Your UofT email is {{ email_address }}</h1>
+        {% else %}
+        <h1>Please use your UofT email.</h1>
+        {% endif %}
     </div>
-    <p>The local date and time is {{ moment(current_time).format('LLLL') }}.</p>
-    <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
     {{ wtf.quick_form(form) }}
+    
 </div>
 {% endblock %}
