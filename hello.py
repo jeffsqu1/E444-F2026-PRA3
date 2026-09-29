@@ -43,12 +43,40 @@ def index():
         if 'utoronto' in email_address.lower():
             session['email'] = email_address
             session['username'] = email_address.split('@', 1)[0]
+            session.pop('chat_name', None)
+            return redirect(url_for('chat'))
         else:
             session.pop('email', None)
             session.pop('username', None)
         return redirect(url_for('index'))
 
     return render_template('index.html', form=form, name=session.get('name'), username=session.get('username'), email_address=session.get('email'), current_time=datetime.utcnow())
+
+@app.route('/chat', methods=['GET', 'POST'])
+def chat():
+    if request.method == 'GET':
+        return render_template('chat.html', username=session.get('username'))
+
+    message = (request.get_json(silent=True) or {}).get('message', '').strip()
+    lower_message = message.lower()
+    if lower_message.startswith('my name is '):
+        chat_name = message[11:].strip(' .!?') # get name without punctuation
+        session['chat_name'] = chat_name
+        reply = f'Nice to meet you, {chat_name}!'
+    elif 'what is my name' in lower_message:
+        chat_name = session.get('chat_name') # saved name from chat
+        reply = f'Your name is {chat_name}.' if chat_name else "I don't know your name yet."
+    elif 'hello' in lower_message or 'hi' in lower_message:
+        reply = 'Hello!'
+    else:
+        reply = "I don't understand."
+
+    return {'reply': reply}
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 @app.route('/user/<name>')
 def user(name):

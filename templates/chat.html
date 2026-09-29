@@ -1,0 +1,77 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}Flasky Chatbot{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">Flasky</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Hello, {{ username }}!</h1>
+        <p>Welcome to the chatbot.</p>
+    </div>
+
+    <div id="chat-messages" class="well" role="log" aria-live="polite">
+        <p><strong>Chatbot:</strong> Hi! How can I help you?</p>
+    </div>
+
+    <form id="chat-form">
+        <div class="input-group">
+            <label class="sr-only" for="message">Message</label>
+            <input id="message" class="form-control" type="text" placeholder="Type a message" required>
+            <span class="input-group-btn">
+                <button class="btn btn-primary" type="submit">Send</button>
+            </span>
+        </div>
+    </form>
+</div>
+
+<!-- Script for chatbot reply -->
+<script>
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message');
+    const chatMessages = document.getElementById('chat-messages');
+
+    chatForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const message = messageInput.value.trim();
+        if (!message) {
+            return;
+        }
+
+        const userMessage = document.createElement('p');
+        userMessage.innerHTML = '<strong>You:</strong> ';
+        userMessage.append(message);
+        chatMessages.appendChild(userMessage);
+
+        fetch('{{ url_for("chat") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: message})
+        })
+            .then(response => response.json())
+            .then(data => {
+                const reply = document.createElement('p');
+                reply.innerHTML = '<strong>Chatbot:</strong> ';
+                reply.append(data.reply);
+                chatMessages.appendChild(reply);
+                messageInput.value = '';
+                messageInput.focus();
+            });
+    });
+</script>
+{% endblock %}
